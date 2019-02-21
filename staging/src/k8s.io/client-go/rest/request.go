@@ -515,7 +515,16 @@ func (r Request) finalURLTemplate() url.URL {
 	groupIndex := 0
 	index := 0
 	if r.URL() != nil && r.c.base != nil && strings.Contains(r.URL().Path, r.c.base.Path) {
-		groupIndex += len(strings.Split(r.c.base.Path, "/"))
+		// only add baseURL path length if it is different than `/`
+		// as strings.Split("/", "/") returns length of 2
+		if r.c.base.Path != "/" {
+			// We need to perform a `path.Join` since path.Join appends `/` to a
+			// path that does not contain `/` and removes duplicate `/` if they
+			// exist.
+			groupIndex += len(strings.Split(path.Join("/", r.c.base.Path), "/"))
+		} else {
+			groupIndex += 1
+		}
 	}
 	if groupIndex >= len(segments) {
 		return *url
